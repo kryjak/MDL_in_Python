@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.special as sp
+import matplotlib.pyplot as plt
 
 class BatchUtils(object):
     def __init__(self) -> None:
@@ -53,3 +54,48 @@ class LogisticRegressionUtils(object):
     
     def derivative_b(self, pY, T):
         return np.sum(pY - T, axis=0)
+
+class MultiClassLogisticRegression(LogisticRegressionUtils, MultiClassUtils, BatchUtils):
+    def __init__(self) -> None:
+        self.W = None
+        self.b = None
+
+    def fit(self, X, Y, epochs=10**3, learning_rate=1e-5, reg=0):
+        N, D = X.shape
+        # initialise weights and biases:
+        n_classes = len(set(Y))
+    
+        self.W = np.random.normal(size=(D, n_classes)) / np.sqrt(D)
+        self.b = np.zeros((1, n_classes))
+    
+        cost = []
+        error = []
+    
+        T = self.encode_targets(Y)
+        for ii in range(epochs):
+            pY = self.forward_pass(X, self.W, self.b)
+
+            grad_W = self.derivative_W(X, pY, T) + reg*self.W
+            grad_b = self.derivative_b(pY, T) + reg*self.b
+            self.W -= learning_rate * grad_W
+            self.b -= learning_rate * grad_b
+
+            if ii % 20 == 0:
+                cost.append(self.cross_entropy_loss(pY, T))
+                error_rate = 1 - self.classification_rate(self.predict(pY), Y)
+
+                print(f'Cost at epoch {ii}: {cost[-1]}, training error rate: {error_rate}')
+
+        plt.plot(cost)
+        plt.show()
+    
+        print(f'Error rate: {error_rate}')
+        
+    def classify(self, X):
+        return self.predict(self.forward_pass(X, self.W, self.b))
+        
+    def evaluate(self, X_test, Y_test):
+        preds = self.classify(X_test, self.W, self.b)
+        T = self.encode(self.encode_targets(Y_test))
+        error_rate = 1 - self.classification_rate(preds, T)
+        return error_rate   
