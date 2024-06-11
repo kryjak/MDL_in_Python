@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def create_spiral(n_arms=6, n_points_per_arm=100):
+def create_spiral(n_arms:int = 6, n_points_per_arm: int = 100, show_plot: bool = False):
     if n_arms % 2 != 0:
         raise ValueError('Number of arms should be even (this is so that we have classes of equal size).')
     radii = np.linspace(1, 10, 100)
@@ -28,9 +28,10 @@ def create_spiral(n_arms=6, n_points_per_arm=100):
     Y = np.array([0]*n_points_per_arm + [1]*n_points_per_arm)
     Y = np.tile(Y, int(n_arms/2))
 
-    plt.scatter(X[:,0], X[:,1], marker='.', c=Y)
-    plt.axis('scaled')
-    plt.show()
+    if show_plot:
+        plt.scatter(X[:,0], X[:,1], marker='.', c=Y)
+        plt.axis('scaled')
+        plt.show()
 
     return X, Y
 
